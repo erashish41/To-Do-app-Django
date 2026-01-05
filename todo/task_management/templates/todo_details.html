@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block content %} 
+
+    <div class="container">
+
+
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            Update task
+        </button>
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Update Task</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{% url 'todo_update' todo.pk %}">
+                            {% csrf_token %}
+                            {{ form | crispy}}
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col">
+                {% if todo %}
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        <h3 class="card-title">title: {{todo.title}}</h3>
+                        <p class="card-text">priority: {{todo.priority}}</p>
+                        <p class="card-text">status: {{todo.status}}</p>
+                        <p class="card-text">due_date: {{todo.due_date}}</p>
+                        <p class="card-text">created_by: {{todo.created_by}}</p>
+                        <p class="card-text">title: {{todo.description | truncatewords:4}}</p>
+
+                        <div class="d-flex gap-4">
+                            <a class="btn btn-sm btn-primary" href="{% url 'todo_list' %}">Back to Home page</a>
+                            <form action="{% url 'todo_delete' todo.pk %}" method="post">
+                                {% csrf_token %}
+                                <input class="btn btn-sm btn-danger" type="submit" value="Submit">
+                            </form>
+
+                        </div>                        
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
