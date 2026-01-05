@@ -17,12 +17,11 @@ PRIORITY = (
 )
 
 class ToDo(BaseMixin):
-    title = models.CharField(max_length=100, blank=True, null=True)
+    title = models.CharField(max_length=100)
     priority = models.CharField(max_length=10,choices=PRIORITY, default='medium')
     description = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=20,choices=STATUS, blank=True, null=True)
+    status = models.CharField(max_length=20,choices=STATUS,default='pending')
     due_date = models.DateField(blank=True, null=True)
-    is_completed = models.BooleanField(default=False)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="todos")
     
     def __str__(self):
