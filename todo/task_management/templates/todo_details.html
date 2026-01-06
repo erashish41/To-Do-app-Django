@@ -35,12 +35,23 @@
                 {% if todo %}
                 <div class="card" style="width: 18rem;">
                     <div class="card-body">
-                        <h3 class="card-title">title: {{todo.title}}</h3>
+                        <h5>Task</h5>
+                        <p class="card-title">Title: <strong>{{todo.title}}</strong></p>
                         <p class="card-text">priority: {{todo.priority}}</p>
                         <p class="card-text">status: {{todo.status}}</p>
                         <p class="card-text">due_date: {{todo.due_date}}</p>
                         <p class="card-text">created_by: {{todo.created_by}}</p>
                         <p class="card-text">title: {{todo.description | truncatewords:4}}</p>
+
+                        <hr>
+                        <h5>Category</h5>
+                        <p class="card-text">category: <strong>{{todo.category.name}}</strong></p>
+
+                        <hr>
+                        <h5>Tags</h5>
+                        {% for tag in todo.tags.all %}
+                            <p>tag: <strong>{{tag.name}}</strong></p>
+                        {% endfor %}
 
                         <div class="d-flex gap-4">
                             <a class="btn btn-sm btn-primary" href="{% url 'todo_list' %}">Back to Home page</a>
