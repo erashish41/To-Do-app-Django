@@ -1,9 +1,11 @@
 from django import forms
-from task_management.models import ToDo
+from task_management.models import (
+    Task, SubTask, Category, Tag, Comment, Attachment
+)
 
-class ToDoForm(forms.ModelForm):
+class TaskForm(forms.ModelForm):
     class Meta:
-        model = ToDo
+        model = Task
         fields = [
             'title', 'priority', 'description', 'status', 'due_date', 'created_by'
         ]
