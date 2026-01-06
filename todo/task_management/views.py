@@ -48,14 +48,25 @@ class TaskCreateView(LoginRequiredMixin,CreateView):
     form_class = TaskForm
     success_url = reverse_lazy("todo_list")
     
-    def form_valid(self, form):
-        form.instance.created_by = self.request.user
-        return super().form_valid(form)
     
     def get_initial(self):
         initial = super().get_initial()
         initial['created_by'] = self.request.user
         return initial
+    
+    # def get_form(self, form_class = ...):
+    #     form = super().get_form(form_class)
+    #     form.fields['category'].queryset = Category.objects.filter(
+    #         created_by=self.request.user
+    #         )
+    #     form.fields['tags'].queryset = Tag.objects.filter(
+    #         created_by=self.request.user
+    #     )
+    #     return form
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
 
 
 class TaskUpdateView(LoginRequiredMixin,UpdateView):
@@ -72,5 +83,4 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     success_url = reverse_lazy('todo_list')
         
-    
     

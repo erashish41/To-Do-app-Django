@@ -63,7 +63,7 @@ class Comment(BaseMixin):
     commented_by = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.todo.title}"
+        return f"{self.task.title}"
     
 
 class Attachment(BaseMixin):
