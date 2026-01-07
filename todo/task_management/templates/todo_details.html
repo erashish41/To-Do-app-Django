@@ -1,147 +1,185 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
-{% block content %} 
+{% block content %}
 
-    <div class="container">
+<div class="container py-4">
 
-
-        <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-            Update task
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold text-primary">Task Details</h3>
+        <button
+            type="button"
+            class="btn btn-outline-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#exampleModal">
+            Update Task
         </button>
+    </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Update Task</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="post" action="{% url 'todo_update' todo.pk %}">
-                            {% csrf_token %}
-                            {{ form | crispy}}
-                            <button type="submit" class="btn btn-primary">Save changes</button>
-                        </form>
-                    </div>
+    <!-- Update Task Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary bg-opacity-10">
+                    <h5 class="modal-title text-primary">Update Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-            </div>
-        </div>
-
-
-        <div class="row">
-            <div class="col">
-                {% if todo %}
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
-                        <h5>Task</h5>
-                        <p class="card-title">Title: <strong>{{todo.title}}</strong></p>
-                        <p class="card-text">priority: {{todo.priority}}</p>
-                        <p class="card-text">status: {{todo.status}}</p>
-                        <p class="card-text">due_date: {{todo.due_date}}</p>
-                        <p class="card-text">desc: {{todo.description | truncatewords:4}}</p>
-
-                        <hr>
-                        <h3>Categories</h3>
-                        <ul>
-                        {% for item in category %}
-                            <li>{{ item.name }}</li>
-                        {% empty %}
-                            <li>No categories</li>
-                        {% endfor %}
-                        </ul>
-
-
-                        <hr>
-                        <h5>Tags</h5>
-                        <ul>
-                            {% for tag in todo.tags.all %}
-                                <li> {{tag.name}}</li>
-                            {% empty %}
-                                <li>No Tags</li>
-                            {% endfor %}
-                        </ul>
-
-                        <hr>
-                        <h5>Sub Tasks</h5>
-                        <ul>
-                            {% for sub in todo.subtasks.all %}
-                                <li>{{sub.title}}</li>
-                                <li>{{sub.is_completed}}</li>
-                            {% empty %}
-                                    <li>No subtasks yet</li>
-                            {% endfor %}
-                        </ul>
-
-
-                        <h5>Comments</h5>
-                        <ul>
-                            {% for comment in todo.comments.all %}
-                                <li>{{comment.task}}</li>
-                                <li>{{ comment.comment }}</li>
-                            {% empty %}
-                                <li>No comments yet</li>
-                            {% endfor %}
-                        </ul>
-
-                        <h5>Add Comment</h5>
-                        <form action="{% url 'comment_add' todo.pk %}" method="post">
-                            {% csrf_token %}
-                            <textarea 
-                                name="comment" 
-                                placeholder="Write your comment..."
-                                id="" required>
-                            </textarea>
-                            <button type="submit" class="btn btn-sm btn-primary">submit</button>
-                        </form>
-
-
-                        <h5>Attachments</h5>
-                        <ul>
-                            {% for attach in todo.attachments.all %}
-                                <li>{{attach.task}}</li>
-                                {% if attach.image %}
-                                    <img 
-                                        src="{{ attach.image.url }}" 
-                                        alt="Attachment"
-                                        width="150"
-                                    >
-                                {% endif %}
-                            {% empty %}
-                                <li>No Attachments yet</li>
-                            {% endfor %}
-                        </ul>
-
-                        <h5>Add Attachments</h5>
-                        <form action="{% url 'attachment_add' todo.pk %}" method="post">
-                            {% csrf_token %}
-                            <input type="file" name="image" required>
-                            <button type="submit" class="btn btn-sm btn-primary">Upload</button>
-                        </form>
-
-
-
-
-                        <div class="d-flex gap-4">
-                            <!-- <form method="post" action="">
-                                {% csrf_token %}
-                                <input type="text" name="title" placeholder="Subtask title">
-                                <button type="submit">Add</button>
-                            </form> -->
-
-                            <a class="btn btn-sm btn-primary" href="{% url 'todo_list' %}">Back to Home page</a>
-                            <form action="{% url 'todo_delete' todo.pk %}" method="post">
-                                {% csrf_token %}
-                                <input class="btn btn-sm btn-danger" type="submit" value="Submit">
-                            </form>
-
-                        </div>                        
-                    </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'todo_update' todo.pk %}">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
+
+    {% if todo %}
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+            <!-- Task Info -->
+            <h4 class="card-title text-primary">{{ todo.title }}</h4>
+
+            <div class="mb-3">
+                <span class="badge bg-info text-dark me-2">
+                    Priority: {{ todo.priority }}
+                </span>
+                <span class="badge bg-warning text-dark">
+                    Status: {{ todo.status }}
+                </span>
+            </div>
+
+            <p class="text-muted">
+                <strong>Due Date:</strong> {{ todo.due_date }}
+            </p>
+
+            <p>
+                {{ todo.description|truncatewords:20 }}
+            </p>
+
+            <hr>
+
+            <!-- Categories -->
+            <h5 class="text-primary">Categories</h5>
+            <ul class="list-group list-group-flush mb-3">
+                {% for item in category %}
+                    <li class="list-group-item">{{ item.name }}</li>
+                {% empty %}
+                    <li class="list-group-item text-muted">No categories</li>
+                {% endfor %}
+            </ul>
+
+            <!-- Tags -->
+            <h5 class="text-primary">Tags</h5>
+            <div class="mb-3">
+                {% for tag in todo.tags.all %}
+                    <span class="badge bg-secondary me-1">{{ tag.name }}</span>
+                {% empty %}
+                    <span class="text-muted">No tags</span>
+                {% endfor %}
+            </div>
+
+            <hr>
+
+            <!-- Subtasks -->
+            <h5 class="text-primary">Sub Tasks</h5>
+            <ul class="list-group mb-3">
+                {% for sub in todo.subtasks.all %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ sub.title }}
+                        {% if sub.is_completed %}
+                            <span class="badge bg-success">Done</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Pending</span>
+                        {% endif %}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">No subtasks yet</li>
+                {% endfor %}
+            </ul>
+
+            <hr>
+
+            <!-- Comments -->
+            <h5 class="text-primary">Comments</h5>
+            <ul class="list-group mb-3">
+                {% for comment in todo.comments.all %}
+                    <li class="list-group-item">
+                        {{ comment.comment }}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted">No comments yet</li>
+                {% endfor %}
+            </ul>
+
+            <!-- Add Comment -->
+            <form action="{% url 'comment_add' todo.pk %}" method="post" class="mb-4">
+                {% csrf_token %}
+                <textarea
+                    name="comment"
+                    class="form-control mb-2"
+                    rows="3"
+                    placeholder="Write your comment..."
+                    required></textarea>
+                <button type="submit" class="btn btn-sm btn-primary">
+                    Add Comment
+                </button>
+            </form>
+
+            <hr>
+
+            <!-- Attachments -->
+            <h5 class="text-primary">Attachments</h5>
+            <div class="row g-3 mb-3">
+                {% for attach in todo.attachments.all %}
+                    {% if attach.image %}
+                        <div class="col-md-3">
+                            <img
+                                src="{{ attach.image.url }}"
+                                class="img-fluid rounded border"
+                                alt="Attachment">
+                        </div>
+                    {% endif %}
+                {% empty %}
+                    <p class="text-muted">No attachments yet</p>
+                {% endfor %}
+            </div>
+
+            <!-- Add Attachment -->
+            <form action="{% url 'attachment_add' todo.pk %}" method="post" enctype="multipart/form-data" class="mb-4">
+                {% csrf_token %}
+                <input type="file" name="image" class="form-control mb-2" required>
+                <button type="submit" class="btn btn-sm btn-primary">
+                    Upload Attachment
+                </button>
+            </form>
+
+            <hr>
+
+            <!-- Actions -->
+            <div class="d-flex justify-content-between">
+                <a class="btn btn-outline-secondary" href="{% url 'todo_list' %}">
+                    ← Back to Tasks
+                </a>
+
+                <form action="{% url 'todo_delete' todo.pk %}" method="post">
+                    {% csrf_token %}
+                    <button class="btn btn-danger">
+                        Delete Task
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+    {% endif %}
+
+</div>
 
 {% endblock %}

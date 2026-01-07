@@ -29,6 +29,17 @@ class TaskListView(LoginRequiredMixin,ListView):
         context['form'] = TaskForm()
         context['category'] = Category.objects.filter(created_by=self.request.user)
         return context
+    
+    def post(self, request, *args, **kwargs):
+        name = request.POST.get("name")
+
+        if name:
+            Category.objects.create(
+                name=name,
+                created_by=request.user
+            )
+
+        return redirect("todo_list")
         
     
     
@@ -37,14 +48,16 @@ class TaskDetailView(LoginRequiredMixin,DetailView):
     template_name = "todo_details.html"
     context_object_name = "todo"
     
+    def get_queryset(self):
+        return Task.objects.filter(created_by=self.request.user)
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = TaskForm()
+        context['category'] = CategoryForm()
         context['category'] = Category.objects.filter(created_by=self.request.user)
         return context
     
-    def get_queryset(self):
-        return Task.objects.filter(created_by=self.request.user)
     
     
     
@@ -87,32 +100,6 @@ class TaskUpdateView(LoginRequiredMixin,UpdateView):
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     success_url = reverse_lazy('todo_list')
-    
-
-class CategoryCreateView(LoginRequiredMixin, CreateView):
-    model = Category
-    form_class = CategoryForm
-    success_url = reverse_lazy("todo_list")
-    
-    def form_valid(self, form):
-        form.instance.created_by=self.request.user
-        return super().form_valid(form)
-    
-class CategoryUpdateView(LoginRequiredMixin, UpdateView):
-    model = Category
-    form_class = CategoryForm
-    success_url = reverse_lazy("todo_list")
-
-    def get_queryset(self):
-        return Category.objects.filter(created_by=self.request.user)
-    
-
-class CategoryDeleteView(LoginRequiredMixin, DeleteView):
-    model = Category
-    success_url = reverse_lazy("todo_list")
-
-    def get_queryset(self):
-        return Category.objects.filter(created_by=self.request.user)
 
 
 
