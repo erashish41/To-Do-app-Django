@@ -39,6 +39,27 @@
                         <p class="card-text">priority: {{ todo.priority }}</p>
                         <p class="card-text">created_by: {{ todo.created_by }}</p>
 
+                        <hr>
+                        <h4>Categories</h4>
+                        <ul>
+                            {% for cat in request.user.categories.all %}
+                                <li>
+                                    {{ cat.name }}
+                                    <a href="{% url 'category_update' cat.pk %}">Edit</a>
+                                    |
+                                    <a href="{% url 'category_delete' cat.pk %}">Delete</a>
+                                </li>
+                            {% empty %}
+                                <li>No categories yet</li>
+                            {% endfor %}
+                        </ul>
+
+                        <a href="{% url 'category_add' %}" class="btn btn-sm btn-primary">
+                            Add Category
+                        </a>
+
+
+
                         <a class="btn btn-sm btn-primary" href="{% url 'todo_details' todo.id %}">View</a>
                     </div>
                 {% endfor %}

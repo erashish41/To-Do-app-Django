@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
@@ -7,7 +8,9 @@ from django.views.generic import (
 from task_management.models import (
     Task, SubTask, Category, Tag, Comment, Attachment
 )
-from task_management.forms import TaskForm
+from task_management.forms import (
+    TaskForm, CategoryForm
+)
 
 # Create your views here.
 
@@ -18,12 +21,13 @@ class TaskListView(LoginRequiredMixin,ListView):
     paginate_by = 5
     
     def get_queryset(self):
-        context_list = Task.objects.filter(created_by=self.request.user)
+        context_list = Task.objects.filter(created_by=self.request.user).select_related('category').prefetch_related('tags')
         return context_list
     
     def get_context_data(self, **kwargs):
         context =  super().get_context_data(**kwargs)
         context['form'] = TaskForm()
+        context['category'] = Category.objects.filter(created_by=self.request.user)
         return context
         
     
@@ -36,6 +40,7 @@ class TaskDetailView(LoginRequiredMixin,DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = TaskForm()
+        context['category'] = Category.objects.filter(created_by=self.request.user)
         return context
     
     def get_queryset(self):
@@ -82,5 +87,71 @@ class TaskUpdateView(LoginRequiredMixin,UpdateView):
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     success_url = reverse_lazy('todo_list')
-        
     
+
+class CategoryCreateView(LoginRequiredMixin, CreateView):
+    model = Category
+    form_class = CategoryForm
+    success_url = reverse_lazy("todo_list")
+    
+    def form_valid(self, form):
+        form.instance.created_by=self.request.user
+        return super().form_valid(form)
+    
+class CategoryUpdateView(LoginRequiredMixin, UpdateView):
+    model = Category
+    form_class = CategoryForm
+    success_url = reverse_lazy("todo_list")
+
+    def get_queryset(self):
+        return Category.objects.filter(created_by=self.request.user)
+    
+
+class CategoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = Category
+    success_url = reverse_lazy("todo_list")
+
+    def get_queryset(self):
+        return Category.objects.filter(created_by=self.request.user)
+
+
+
+    
+class CommentCreateView(LoginRequiredMixin, View):
+    
+    def post(self, request, pk):
+        task = get_object_or_404(Task, pk=pk, created_by=request.user)
+        text = request.POST.get("comment")
+        
+        if text:
+            Comment.objects.create(
+                task=task,
+                comment=text,
+                commented_by=request.user
+            )
+        return redirect("todo_details", pk=pk)
+    
+    
+
+class AttachmentCreateView(LoginRequiredMixin, View):
+    
+    def post(self, request, pk):
+        task = get_object_or_404(Task, pk=pk, created_by=request.user)
+        image = request.FILES.get("image")
+        
+        if image:
+            Attachment.objects.create(
+                task=task,
+                image=image,
+                uploaded_by=request.user                    
+            )
+        return redirect("todo_details", pk=pk)
+    
+    
+class AttachmentDeleteView(LoginRequiredMixin, View):
+    
+    def post(self, request, pk):
+        attachment = get_object_or_404(Attachment, pk=pk, task__created_by=request.user)
+        task_pk = attachment.task.pk
+        attachment.delete()
+        return redirect("todo_details", pk=task_pk)
