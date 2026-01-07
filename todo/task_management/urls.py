@@ -4,7 +4,6 @@ from django.urls import path
 from task_management.views import (
     TaskListView, TaskDetailView, TaskCreateView, 
     TaskUpdateView, TaskDeleteView,
-    CategoryCreateView, CategoryUpdateView, CategoryDeleteView,
     CommentCreateView, AttachmentCreateView, AttachmentDeleteView
     )
 
@@ -15,9 +14,6 @@ urlpatterns = [
     path('todos/<uuid:pk>/update/', TaskUpdateView.as_view(), name='todo_update'),
     path('todos/<uuid:pk>/delete/', TaskDeleteView.as_view(), name='todo_delete'),
     
-    path('todos/categories/add/', CategoryCreateView.as_view(), name='category_add'),
-    path('todos/categories/<int:pk>/update/', CategoryUpdateView.as_view(), name='category_update'),
-    path('todos/categories/<int:pk>/delete/', CategoryDeleteView.as_view(), name='category_delete'),
 
     
     path('todos/<uuid:pk>/comment/add/', CommentCreateView.as_view(), name='comment_add'),

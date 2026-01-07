@@ -1,89 +1,164 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
-{% block content %} 
+{% block content %}
 
-<div class="container">
 
-    <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        Add new task
-    </button>
+<div class="container py-3">
 
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-        <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Add new task</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-            <form method="post" action="{% url 'todo_create' %}">
-                {% csrf_token %}
-                {{ form | crispy }}
-                <button type="submit" class="btn btn-primary">Save changes</button>
-            </form>
-        </div>
-        </div>
-    </div>
+    <!-- Header -->
+    <div class="mb-4">
+        <h3 class="fw-bold">My Tasks</h3>
+        <button
+            type="button"
+            class="btn btn-primary mt-2"
+            data-bs-toggle="modal"
+            data-bs-target="#exampleModal">
+            + Add New Task
+        </button>
     </div>
 
-
-    <div class="row">
-        <div class="col">
-            {% if todo_list %}
-            <div class="card" style="width: 18rem;">
-                {% for todo in todo_list %}
-                    <div class="card-body">
-                        <h5 class="card-title">task: {{ todo.title }}</h5>
-                        <p class="card-text">priority: {{ todo.priority }}</p>
-                        <p class="card-text">created_by: {{ todo.created_by }}</p>
-
-                        <hr>
-                        <h4>Categories</h4>
-                        <ul>
-                            {% for cat in request.user.categories.all %}
-                                <li>
-                                    {{ cat.name }}
-                                    <a href="{% url 'category_update' cat.pk %}">Edit</a>
-                                    |
-                                    <a href="{% url 'category_delete' cat.pk %}">Delete</a>
-                                </li>
-                            {% empty %}
-                                <li>No categories yet</li>
-                            {% endfor %}
-                        </ul>
-
-                        <a href="{% url 'category_add' %}" class="btn btn-sm btn-primary">
-                            Add Category
-                        </a>
-
-
-
-                        <a class="btn btn-sm btn-primary" href="{% url 'todo_details' todo.id %}">View</a>
-                    </div>
-                {% endfor %}
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary bg-opacity-10">
+                    <h5 class="modal-title text-primary">Create Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" action="{% url 'todo_create' %}">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success">
+                                Save Task
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            {% endif %}
         </div>
     </div>
 
+    <div class="row g-4">
 
-    <div class="pagination">
-        <span class="step-links">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        <!-- LEFT: Task List -->
+        <div class="col-lg-8">
+            {% if todo_list %}
+                <div class="row g-3">
+                    {% for todo in todo_list %}
+                        <div class="col-md-6">
+                            <div class="card h-100 border-primary border-opacity-25 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">
+                                        {{ todo.title }}
+                                    </h5>
+
+                                    <span class="badge bg-info text-dark mb-2">
+                                        {{ todo.priority }}
+                                    </span>
+
+                                    <p class="text-muted small mb-3">
+                                        Created by {{ todo.created_by }}
+                                    </p>
+
+                                    <div class="d-flex gap-2">
+                                        <a
+                                            href="{% url 'todo_details' todo.id %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+
+                                        <form action="{% url 'todo_delete' todo.pk %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No tasks created yet.
+                </div>
             {% endif %}
+        </div>
 
-            <span class="current">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-            </span>
+        <!-- RIGHT: Category Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-info border-opacity-50 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">
+                        Categories
+                    </h5>
 
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">next</a>
-            {% endif %}
-        </span>
+                    <form method="post" class="d-flex gap-2 mb-3">
+                        {% csrf_token %}
+                        <input
+                            type="text"
+                            name="name"
+                            class="form-control form-control-sm"
+                            placeholder="New category"
+                            required
+                        >
+                        <button type="submit" class="btn btn-sm btn-info text-white">
+                            Add
+                        </button>
+                    </form>
+
+                    <ul class="list-group list-group-flush">
+                        {% for cat in category %}
+                            <li class="list-group-item border-0 border-bottom">
+                                <span class="badge bg-primary bg-opacity-10 text-primary me-2">
+                                    #
+                                </span>
+                                {{ cat.name }}
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted">
+                                No categories yet
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
     </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link text-primary" href="?page={{ page_obj.previous_page_number }}">
+                            Previous
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link text-primary" href="?page={{ page_obj.next_page_number }}">
+                            Next
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
 </div>
 
 {% endblock %}
