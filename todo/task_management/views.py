@@ -6,7 +6,7 @@ from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView
 )
 from task_management.models import (
-    Task, SubTask, Category, Tag, Comment, Attachment
+    Task, Category, Comment, Attachment, Tag
 )
 from task_management.forms import (
     TaskForm, CategoryForm
@@ -53,7 +53,7 @@ class TaskDetailView(LoginRequiredMixin,DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = TaskForm()
+        context['form'] = TaskForm(instance=self.object)
         context['category'] = CategoryForm()
         context['category'] = Category.objects.filter(created_by=self.request.user)
         return context
@@ -72,15 +72,15 @@ class TaskCreateView(LoginRequiredMixin,CreateView):
         initial['created_by'] = self.request.user
         return initial
     
-    # def get_form(self, form_class = ...):
-    #     form = super().get_form(form_class)
-    #     form.fields['category'].queryset = Category.objects.filter(
-    #         created_by=self.request.user
-    #         )
-    #     form.fields['tags'].queryset = Tag.objects.filter(
-    #         created_by=self.request.user
-    #     )
-    #     return form
+    def get_form(self, form_class = None):
+        form = super().get_form(form_class)
+        form.fields['category'].queryset = Category.objects.filter(
+            created_by=self.request.user
+            )
+        form.fields['tags'].queryset = Tag.objects.filter(
+            created_by=self.request.user
+        )
+        return form
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
