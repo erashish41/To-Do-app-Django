@@ -1,6 +1,6 @@
 from django import forms
 from task_management.models import (
-    Task, SubTask, Category, Tag, Comment, Attachment
+    Task, User, Category
 )
 
 class TaskForm(forms.ModelForm):
@@ -12,7 +12,14 @@ class TaskForm(forms.ModelForm):
         ]
         
 
-# class CategoryForm(forms.ModelForm):
-#     class Meta:
-#         model = Category
-#         fields = ['name', 'description', 'created_by']
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            'username', 'first_name', 'email', 'password',
+        ]
+        
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['name', 'description', 'created_by']

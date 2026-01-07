@@ -3,7 +3,9 @@ from django.conf.urls.static import static
 from django.urls import path
 from task_management.views import (
     TaskListView, TaskDetailView, TaskCreateView, 
-    TaskUpdateView, TaskDeleteView
+    TaskUpdateView, TaskDeleteView,
+    CategoryCreateView, CategoryUpdateView, CategoryDeleteView,
+    CommentCreateView, AttachmentCreateView, AttachmentDeleteView
     )
 
 urlpatterns = [
@@ -11,7 +13,17 @@ urlpatterns = [
     path('todos/create/', TaskCreateView.as_view(), name='todo_create'),
     path('todos/<uuid:pk>/', TaskDetailView.as_view(), name='todo_details'),
     path('todos/<uuid:pk>/update/', TaskUpdateView.as_view(), name='todo_update'),
-    path('todos/<uuid:pk>/delete/', TaskDeleteView.as_view(), name='todo_delete')
+    path('todos/<uuid:pk>/delete/', TaskDeleteView.as_view(), name='todo_delete'),
+    
+    path('todos/categories/add/', CategoryCreateView.as_view(), name='category_add'),
+    path('todos/categories/<int:pk>/update/', CategoryUpdateView.as_view(), name='category_update'),
+    path('todos/categories/<int:pk>/delete/', CategoryDeleteView.as_view(), name='category_delete'),
+
+    
+    path('todos/<uuid:pk>/comment/add/', CommentCreateView.as_view(), name='comment_add'),
+    
+    path('todos/<uuid:pk>/attachment/add/', AttachmentCreateView.as_view(), name='attachment_add'),
+    path('attachment/<uuid:pk>/delete/', AttachmentDeleteView.as_view(), name='attachment_delete'),
 ]
 
 
