@@ -54,7 +54,6 @@ class TaskDetailView(LoginRequiredMixin,DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = TaskForm(instance=self.object)
-        context['category'] = CategoryForm()
         context['category'] = Category.objects.filter(created_by=self.request.user)
         return context
     
@@ -65,6 +64,7 @@ class TaskCreateView(LoginRequiredMixin,CreateView):
     model = Task
     form_class = TaskForm
     success_url = reverse_lazy("todo_list")
+    template_name = "todo_list.html"  
     
     
     def get_initial(self):
