@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.urls import reverse_lazy
@@ -12,6 +13,8 @@ from task_management.forms import (
     TaskForm, CategoryForm
 )
 
+logger = logging.getLogger(__name__)
+
 # Create your views here.
 
 class TaskListView(LoginRequiredMixin,ListView):
@@ -21,6 +24,7 @@ class TaskListView(LoginRequiredMixin,ListView):
     paginate_by = 5
     
     def get_queryset(self):
+        logger.info(f"Fetching task list for user={self.request.user}")
         context_list = Task.objects.filter(created_by=self.request.user).select_related('category').prefetch_related('tags')
         return context_list
     
@@ -34,10 +38,10 @@ class TaskListView(LoginRequiredMixin,ListView):
         name = request.POST.get("name")
 
         if name:
-            Category.objects.create(
-                name=name,
-                created_by=request.user
-            )
+            Category.objects.create(name=name,created_by=request.user)
+            logger.info(f"New category created: {name} by {request.user}")
+        else:
+            logger.warning("Category creation attempted with empty name")
 
         return redirect("todo_list")
         
@@ -49,12 +53,12 @@ class TaskDetailView(LoginRequiredMixin,DetailView):
     context_object_name = "todo"
     
     def get_queryset(self):
+        logger.debug(f"Viewing task detail for user={self.request.user}")
         return Task.objects.filter(created_by=self.request.user)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = TaskForm(instance=self.object)
-        context['category'] = CategoryForm()
         context['category'] = Category.objects.filter(created_by=self.request.user)
         return context
     
@@ -65,6 +69,7 @@ class TaskCreateView(LoginRequiredMixin,CreateView):
     model = Task
     form_class = TaskForm
     success_url = reverse_lazy("todo_list")
+    template_name = "todo_list.html"  
     
     
     def get_initial(self):
@@ -84,6 +89,7 @@ class TaskCreateView(LoginRequiredMixin,CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
+        logger.info(f"Task created: {form.instance.title} by {self.request.user}")
         return super().form_valid(form)
 
 
@@ -93,6 +99,7 @@ class TaskUpdateView(LoginRequiredMixin,UpdateView):
     success_url = reverse_lazy('todo_list')
     
     def get_queryset(self):
+        logger.info(f"Task updated: {form.instance.title} by {self.request.user}")
         return Task.objects.filter(created_by=self.request.user)
     
     
@@ -101,6 +108,10 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
     model = Task
     success_url = reverse_lazy('todo_list')
 
+    def delete(self, request, *args, **kwargs):
+        obj = self.get_object()
+        logger.warning(f"Task deleted: {obj.title} by {request.user}")
+        return super().delete(request, *args, **kwargs)
 
 
     
@@ -116,6 +127,9 @@ class CommentCreateView(LoginRequiredMixin, View):
                 comment=text,
                 commented_by=request.user
             )
+            logger.info(f"Comment added to task={pk} by {request.user}")
+        else:
+            logger.warning(f"Empty comment attempt on task={pk} by {request.user}")
         return redirect("todo_details", pk=pk)
     
     
@@ -132,6 +146,9 @@ class AttachmentCreateView(LoginRequiredMixin, View):
                 image=image,
                 uploaded_by=request.user                    
             )
+            logger.info(f"Attachment uploaded for task={pk} by {request.user}")
+        else:
+            logger.warning(f"Attachment upload attempted without file for task={pk}")
         return redirect("todo_details", pk=pk)
     
     
@@ -141,4 +158,5 @@ class AttachmentDeleteView(LoginRequiredMixin, View):
         attachment = get_object_or_404(Attachment, pk=pk, task__created_by=request.user)
         task_pk = attachment.task.pk
         attachment.delete()
+        logger.warning(f"Attachment deleted: id={pk} by {request.user}")
         return redirect("todo_details", pk=task_pk)

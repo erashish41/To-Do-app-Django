@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +46,8 @@ INSTALLED_APPS = [
     'auth_user',
     'crispy_forms',
     'crispy_bootstrap5',
+    
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +67,22 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "no-reply@todoapp.com"
+
+
+
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = '/'
+
 
 TEMPLATES = [
     {
@@ -83,12 +105,27 @@ WSGI_APPLICATION = 'todo.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres_todo_db',
+        'USER': 'ashishbhardwaj',
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
+
+
+ 
 
 
 # Password validation
@@ -131,3 +168,57 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "django.log"),
+            "formatter": "verbose",
+        },
+    },
+
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "task_management": { 
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
+
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ]
+}
