@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'auth_user',
     'crispy_forms',
     'crispy_bootstrap5',
+    
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -211,4 +213,12 @@ LOGGING = {
             "propagate": False,
         },
     },
+}
+
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ]
 }
