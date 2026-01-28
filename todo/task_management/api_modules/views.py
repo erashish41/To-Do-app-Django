@@ -1,10 +1,16 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
-from task_management.api_modules.serializers import TaskSerializer
+from rest_framework.views import APIView
+
+from django.http import Http404
+
 from task_management.models import (
     Task, Category, Comment, Attachment, Tag
 )
+from task_management.api_modules.serializers import (
+    TaskSerializer, CategorySerializer
+    )
 
 
 @api_view(["GET", "POST"])
@@ -41,4 +47,51 @@ def taskDetail(request, pk):
     
     elif request.method == "DELETE":
         task.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    
+    
+class CategoryView(APIView):
+    def get(self, request):
+        category = Category.objects.all()
+        serializer = CategorySerializer(category, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+    def post(self, request):
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+class CategoryDetail(APIView):
+    def get_object(self,pk):
+        try:
+            return Category.objects.get(pk=pk)
+        except Category.DoesNotExist:
+            return Http404
+        
+    """
+    - get_object() never returns a Response.
+    - It either returns an object or raises an exception like Http404, and DRF handles the response.
+    """
+    
+    def get(self, request, pk):
+        category = self.get_object(pk)
+        serializer = CategorySerializer(category)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request, pk):
+        category = self.get_object(pk)
+        serializer = CategorySerializer(category, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self,request,pk):
+        category = self.get_object(pk)
+        category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
