@@ -2,6 +2,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
+from rest_framework import mixins, generics
 
 from django.http import Http404
 
@@ -9,7 +10,7 @@ from task_management.models import (
     Task, Category, Comment, Attachment, Tag
 )
 from task_management.api_modules.serializers import (
-    TaskSerializer, CategorySerializer
+    TaskSerializer, CategorySerializer, TagSerializer
     )
 
 
@@ -95,3 +96,27 @@ class CategoryDetail(APIView):
         category = self.get_object(pk)
         category.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    
+class TagView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+    queryset= Tag.objects.all()
+    serializer_class = TagSerializer
+    
+    def get(self,request):
+        return self.list(request)
+    
+    def post(self,request):
+        return self.create(request)
+    
+class TagDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    
+    def get(self,request, pk):
+        return self.retrieve(request, pk)
+    
+    def put(self,request, pk):
+        return self.update(request, pk)
+
+    def delete(self,request, pk):
+        return self.destroy(request, pk)
