@@ -98,25 +98,35 @@ class CategoryDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
     
-class TagView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
-    queryset= Tag.objects.all()
-    serializer_class = TagSerializer
+# class TagView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+#     queryset= Tag.objects.all()
+#     serializer_class = TagSerializer
     
-    def get(self,request):
-        return self.list(request)
+#     def get(self,request):
+#         return self.list(request)
     
-    def post(self,request):
-        return self.create(request)
+#     def post(self,request):
+#         return self.create(request)
     
-class TagDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+# class TagDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+#     queryset = Tag.objects.all()
+#     serializer_class = TagSerializer
+    
+#     def get(self,request, pk):
+#         return self.retrieve(request, pk)
+    
+#     def put(self,request, pk):
+#         return self.update(request, pk)
+
+#     def delete(self,request, pk):
+#         return self.destroy(request, pk)
+
+
+class TagView(generics.ListCreateAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     
-    def get(self,request, pk):
-        return self.retrieve(request, pk)
     
-    def put(self,request, pk):
-        return self.update(request, pk)
-
-    def delete(self,request, pk):
-        return self.destroy(request, pk)
+class TagDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
