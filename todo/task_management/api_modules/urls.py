@@ -1,10 +1,15 @@
 # urls.py
 
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from task_management.api_modules.views import (
     taskView, taskDetail, CategoryView, CategoryDetail,
-    TagView, TagDetail
+    TagView, TagDetail, CommentView
     )
+
+router = DefaultRouter()
+router.register('comment', CommentView, basename='comment_list')
+
 
 urlpatterns = [
     path('v2/task/', taskView, name='task_list'),
@@ -14,5 +19,8 @@ urlpatterns = [
     path('v2/category/<uuid:pk>/', CategoryDetail.as_view(), name='category_detail'),
     
     path('v2/tag/', TagView.as_view(), name='tag_list'),
-    path('v2/tag/<uuid:pk>/', TagDetail.as_view(), name='tag_detail')
+    path('v2/tag/<uuid:pk>/', TagDetail.as_view(), name='tag_detail'),
+    
+    path('v2/', include(router.urls))
+    
 ]

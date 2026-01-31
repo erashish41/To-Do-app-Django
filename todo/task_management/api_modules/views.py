@@ -2,15 +2,17 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
-from rest_framework import mixins, generics
+from rest_framework import mixins, generics, viewsets
 
+from django.shortcuts import get_object_or_404
 from django.http import Http404
 
 from task_management.models import (
     Task, Category, Comment, Attachment, Tag
 )
 from task_management.api_modules.serializers import (
-    TaskSerializer, CategorySerializer, TagSerializer
+    TaskSerializer, CategorySerializer, TagSerializer,
+    CommentSerializer
     )
 
 
@@ -98,35 +100,68 @@ class CategoryDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
     
-# class TagView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
-#     queryset= Tag.objects.all()
-#     serializer_class = TagSerializer
+class TagView(mixins.ListModelMixin, mixins.CreateModelMixin, generics.GenericAPIView):
+    queryset= Tag.objects.all()
+    serializer_class = TagSerializer
     
-#     def get(self,request):
-#         return self.list(request)
+    def get(self,request):
+        return self.list(request)
     
-#     def post(self,request):
-#         return self.create(request)
+    def post(self,request):
+        return self.create(request)
     
-# class TagDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+class TagDetail(mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin, generics.GenericAPIView):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    
+    def get(self,request, pk):
+        return self.retrieve(request, pk)
+    
+    def put(self,request, pk):
+        return self.update(request, pk)
+
+    def delete(self,request, pk):
+        return self.destroy(request, pk)
+
+
+# class TagView(generics.ListCreateAPIView):
 #     queryset = Tag.objects.all()
 #     serializer_class = TagSerializer
     
-#     def get(self,request, pk):
-#         return self.retrieve(request, pk)
     
-#     def put(self,request, pk):
-#         return self.update(request, pk)
-
-#     def delete(self,request, pk):
-#         return self.destroy(request, pk)
+# class TagDetail(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Tag.objects.all()
+#     serializer_class = TagSerializer
 
 
-class TagView(generics.ListCreateAPIView):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+class CommentView(viewsets.ViewSet):
+    def list(self,request):
+        queryset = Comment.objects.all()
+        serializer = CommentSerializer(queryset, many=True)
+        return Response(serializer.data)
+        
+    def create(self,request):
+        queryset = Comment.objects.all()
+        serializer = CommentSerializer(queryset)
+        if serializer.is_valid:
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    def retrieve(self,request,pk=None):
+        queryset = get_object_or_404(Comment, pk=pk)
+        serializer = CommentSerializer(queryset)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
-class TagDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Tag.objects.all()
-    serializer_class = TagSerializer
+    def update(self,request,pk=None):
+        queryset = get_object_or_404(Comment, pk=pk)
+        serializer = CommentSerializer(queryset,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self,request,pk=None):
+        queryset = get_object_or_404(Comment,pk=pk)
+        queryset.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
